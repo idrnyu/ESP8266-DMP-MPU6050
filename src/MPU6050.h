@@ -84,7 +84,14 @@ public:
         gyroY = (float)rawGyroY / gyroScale - gyroYOffset;
         gyroZ = (float)rawGyroZ / gyroScale - gyroZOffset;
 
-        temperature = (float)rawTemp / 340.0f + 36.53f;     // °C
+        // 温度计算（根据芯片版本不同）
+        if (whoAmI == 0x68) {
+            // 旧版本 (ID=0x68)
+            temperature = (float)rawTemp / 340.0f + 36.53f;
+        } else {
+            // 新版本 (ID=0x70)
+            temperature = (19.0f + ((float)rawTemp - 521.0f) / 340.0f);
+        }
 
         // 时间步长（秒）
         uint32_t now = micros();
