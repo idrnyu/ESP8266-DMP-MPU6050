@@ -71,6 +71,12 @@
 #define log_i       MPL_LOGI
 #define log_e       MPL_LOGE
 
+#elif defined ARDUINO_HAL
+/* Arduino HAL (ESP8266/Arduino platforms) */
+/* i2c_write, i2c_read, delay_ms, get_ms are defined externally */
+#define log_i(...)     do {} while (0)
+#define log_e(...)     do {} while (0)
+
 #else
 #error  Gyro driver is missing the system layer implementations.
 #endif

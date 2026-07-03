@@ -1,11 +1,9 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include "MPU6050.h"
+#include "config.h"
+#include "MPU6050_DMP.h"
 
-// === 你的国产 MPU6050 I2C 地址 ===
-#define MPU6050_ADDR 0x70
-
-MPU6050 mpu;
+MPU6050_DMP mpu;
 
 // I2C 总线扫描（找不到传感器时自动触发）
 void scanI2C() {
@@ -28,36 +26,30 @@ void setup() {
     delay(500);
     Serial.println("\n=============================");
     Serial.println("  ESP8266 + MPU6050 角度读取");
-    Serial.println("  互补滤波 (非 DMP)");
+    Serial.println("  使用 DMP (数字运动处理器)");
     Serial.println("=============================\n");
 
-    if (!mpu.begin(MPU6050_ADDR)) {
-        Serial.printf("[错误] 0x%02X 未找到 MPU6050！\n", MPU6050_ADDR);
+    if (!mpu.begin(MPU6050_I2C_ADDR)) {
+        Serial.printf("[错误] 0x%02X 未找到 MPU6050！\n", MPU6050_I2C_ADDR);
         scanI2C();
         Serial.println("程序暂停。请检查接线和地址后重启。");
         while (true) { delay(1000); }
     }
 
-    Serial.printf("[OK] MPU6050 已连接  地址=0x%02X  WHO_AM_I=0x%02X\n",
-                  mpu.getAddress(), mpu.getWhoAmI());
+    Serial.printf("[OK] MPU6050 已连接  地址=0x%02X\n", mpu.getAddress());
 
-    Serial.println("\n>> 陀螺仪校准中，请保持传感器静止...");
-    mpu.calibrateGyro(1000);
-    float ox, oy, oz;
-    mpu.getGyroOffsets(ox, oy, oz);
-    Serial.printf("   零偏: X=%.2f  Y=%.2f  Z=%.2f  (°/s)\n", ox, oy, oz);
-    Serial.println(">> 校准完成，开始输出角度数据\n");
+    Serial.println("\n>> DMP 初始化完成，开始读取角度和加速度数据\n");
 
-    Serial.println("Pitch(°)   Roll(°)    Yaw(°)     Temp(°C)");
-    Serial.println("--------------------------------------------");
+    Serial.println("Pitch(°)   Roll(°)    Yaw(°)     AccX(g)    AccY(g)    AccZ(g)");
+    Serial.println("--------------------------------------------------------------------");
 }
 
 void loop() {
     mpu.update();
 
-    Serial.printf("%-10.2f %-10.2f %-10.2f %.1f\n",
+    Serial.printf("%-10.2f %-10.2f %-10.2f %-10.3f %-10.3f %-10.3f\n",
                   mpu.getPitch(), mpu.getRoll(), mpu.getYaw(),
-                  mpu.getTemperature());
+                  mpu.getAccX(), mpu.getAccY(), mpu.getAccZ());
 
     delay(50);  // ~20 Hz 输出
 }

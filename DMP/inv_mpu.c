@@ -115,6 +115,12 @@ static inline int reg_int_cb(struct int_param_s *int_param)
 /* UC3 is a 32-bit processor, so abs and labs are equivalent. */
 #define labs        abs
 #define fabs(x)     (((x)>0)?(x):-(x))
+#elif defined ARDUINO_HAL
+/* Arduino HAL (ESP8266/Arduino platforms) */
+/* i2c_write, i2c_read, delay_ms, get_ms, reg_int_cb are defined externally */
+#define log_i(...)     do {} while (0)
+#define log_e(...)     do {} while (0)
+#define min(a,b) ((a<b)?(a):(b))
 #else
 #error  Gyro driver is missing the system layer implementations.
 #endif
